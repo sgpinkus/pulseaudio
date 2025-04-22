@@ -63,19 +63,19 @@ bool pa_is_fd_nonblock(int fd);
 
 void pa_make_fd_cloexec(int fd);
 
-int pa_make_secure_dir(const char* dir, mode_t m, uid_t uid, gid_t gid, bool update_perms);
+int pa_make_secure_dir(const char *dir, mode_t m, uid_t uid, gid_t gid, bool update_perms);
 int pa_make_secure_parent_dir(const char *fn, mode_t, uid_t uid, gid_t gid, bool update_perms);
 
 ssize_t pa_read(int fd, void *buf, size_t count, int *type);
 ssize_t pa_write(int fd, const void *buf, size_t count, int *type);
-ssize_t pa_loop_read(int fd, void*data, size_t size, int *type);
-ssize_t pa_loop_write(int fd, const void*data, size_t size, int *type);
+ssize_t pa_loop_read(int fd, void *data, size_t size, int *type);
+ssize_t pa_loop_write(int fd, const void *data, size_t size, int *type);
 
 int pa_close(int fd);
 
 void pa_check_signal_is_blocked(int sig);
 
-char *pa_sprintf_malloc(const char *format, ...) PA_GCC_PRINTF_ATTR(1,2);
+char *pa_sprintf_malloc(const char *format, ...) PA_GCC_PRINTF_ATTR(1, 2);
 char *pa_vsprintf_malloc(const char *format, va_list ap);
 
 char *pa_strlcpy(char *b, const char *s, size_t l);
@@ -89,23 +89,28 @@ int pa_parse_boolean(const char *s) PA_GCC_PURE;
 
 int pa_parse_volume(const char *s, pa_volume_t *volume);
 
-static inline const char *pa_yes_no(bool b) {
+static inline const char *pa_yes_no(bool b)
+{
     return b ? "yes" : "no";
 }
 
-static inline const char *pa_yes_no_localised(bool b) {
+static inline const char *pa_yes_no_localised(bool b)
+{
     return b ? _("yes") : _("no");
 }
 
-static inline const char *pa_strnull(const char *x) {
+static inline const char *pa_strnull(const char *x)
+{
     return x ? x : "(null)";
 }
 
-static inline const char *pa_strempty(const char *x) {
+static inline const char *pa_strempty(const char *x)
+{
     return x ? x : "";
 }
 
-static inline const char *pa_strna(const char *x) {
+static inline const char *pa_strna(const char *x)
+{
     return x ? x : "n/a";
 }
 
@@ -129,14 +134,14 @@ int pa_lock_fd(int fd, int b);
 int pa_lock_lockfile(const char *fn);
 int pa_unlock_lockfile(const char *fn, int fd);
 
-char *pa_hexstr(const uint8_t* d, size_t dlength, char *s, size_t slength);
+char *pa_hexstr(const uint8_t *d, size_t dlength, char *s, size_t slength);
 size_t pa_parsehex(const char *p, uint8_t *d, size_t dlength);
 
 bool pa_startswith(const char *s, const char *pfx) PA_GCC_PURE;
 bool pa_endswith(const char *s, const char *sfx) PA_GCC_PURE;
 
 FILE *pa_open_config_file(const char *global, const char *local, const char *env, char **result);
-char* pa_find_config_file(const char *global, const char *local, const char *env);
+char *pa_find_config_file(const char *global, const char *local, const char *env);
 
 char *pa_get_runtime_dir(void);
 char *pa_get_state_dir(void);
@@ -171,34 +176,38 @@ bool pa_is_path_absolute(const char *p);
 
 void *pa_will_need(const void *p, size_t l);
 
-static inline int pa_is_power_of_two(unsigned n) {
+static inline int pa_is_power_of_two(unsigned n)
+{
     return !(n & (n - 1));
 }
 
-static inline unsigned pa_ulog2(unsigned n) {
+static inline unsigned pa_ulog2(unsigned n)
+{
 
     if (n <= 1)
         return 0;
 
 #if __GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
-    return 8U * (unsigned) sizeof(unsigned) - (unsigned) __builtin_clz(n) - 1;
+    return 8U * (unsigned)sizeof(unsigned) - (unsigned)__builtin_clz(n) - 1;
 #else
-{
-    unsigned r = 0;
+    {
+        unsigned r = 0;
 
-    for (;;) {
-        n = n >> 1;
+        for (;;)
+        {
+            n = n >> 1;
 
-        if (!n)
-            return r;
+            if (!n)
+                return r;
 
-        r++;
+            r++;
+        }
     }
-}
 #endif
 }
 
-static inline unsigned pa_make_power_of_two(unsigned n) {
+static inline unsigned pa_make_power_of_two(unsigned n)
+{
 
     if (pa_is_power_of_two(n))
         return n;
@@ -224,11 +233,12 @@ void pa_unset_env_recorded(void);
 
 bool pa_in_system_mode(void);
 
-#define pa_streq(a,b) (!strcmp((a),(b)))
-#define pa_strneq(a,b,n) (!strncmp((a),(b),(n)))
+#define pa_streq(a, b) (!strcmp((a), (b)))
+#define pa_strneq(a, b, n) (!strncmp((a), (b), (n)))
 
 /* Like pa_streq, but does not blow up on NULL pointers. */
-static inline bool pa_safe_streq(const char *a, const char *b) {
+static inline bool pa_safe_streq(const char *a, const char *b)
+{
     if (a == NULL || b == NULL)
         return a == b;
     return pa_streq(a, b);
@@ -237,7 +247,7 @@ static inline bool pa_safe_streq(const char *a, const char *b) {
 bool pa_str_in_list_spaces(const char *needle, const char *haystack);
 bool pa_str_in_list(const char *haystack, const char *delimiters, const char *needle);
 
-char* pa_str_strip_suffix(const char *str, const char *suffix);
+char *pa_str_strip_suffix(const char *str, const char *suffix);
 
 char *pa_get_host_name_malloc(void);
 char *pa_get_user_name_malloc(void);
@@ -249,7 +259,8 @@ char *pa_uname_string(void);
 #ifdef HAVE_VALGRIND_MEMCHECK_H
 bool pa_in_valgrind(void);
 #else
-static inline bool pa_in_valgrind(void) {
+static inline bool pa_in_valgrind(void)
+{
     return false;
 }
 #endif
@@ -263,7 +274,7 @@ unsigned pa_ncpus(void);
  * returned string. All parameters must be non-NULL and additionally `a' must
  * not be a zero-length string.
  */
-char *pa_replace(const char*s, const char*a, const char *b);
+char *pa_replace(const char *s, const char *a, const char *b);
 
 /* Escapes p by inserting backslashes in front of backslashes. chars is a
  * regular (i.e. NULL-terminated) string containing additional characters that
@@ -278,20 +289,19 @@ char *pa_realpath(const char *path);
 
 void pa_disable_sigpipe(void);
 
-void pa_xfreev(void**a);
+void pa_xfreev(void **a);
 
-static inline void pa_xstrfreev(char **a) {
-    pa_xfreev((void**) a);
+static inline void pa_xstrfreev(char **a)
+{
+    pa_xfreev((void **)a);
 }
 
 char **pa_split_spaces_strv(const char *s);
 
-char* pa_maybe_prefix_path(const char *path, const char *prefix);
+char *pa_maybe_prefix_path(const char *path, const char *prefix);
 
 /* Returns size of the specified pipe or 4096 on failure */
 size_t pa_pipe_buf(int fd);
-
-void pa_reset_personality(void);
 
 bool pa_run_from_build_tree(void) PA_GCC_CONST;
 
@@ -301,7 +311,7 @@ int pa_open_cloexec(const char *fn, int flags, mode_t mode);
 int pa_socket_cloexec(int domain, int type, int protocol);
 int pa_pipe_cloexec(int pipefd[2]);
 int pa_accept_cloexec(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
-FILE* pa_fopen_cloexec(const char *path, const char *mode);
+FILE *pa_fopen_cloexec(const char *path, const char *mode);
 
 void pa_nullify_stdfds(void);
 
@@ -316,12 +326,14 @@ char *pa_win32_get_system_appdata();
 size_t pa_page_size(void);
 
 /* Rounds down */
-static inline void* PA_PAGE_ALIGN_PTR(const void *p) {
-    return (void*) (((size_t) p) & ~(pa_page_size() - 1));
+static inline void *PA_PAGE_ALIGN_PTR(const void *p)
+{
+    return (void *)(((size_t)p) & ~(pa_page_size() - 1));
 }
 
 /* Rounds up */
-static inline size_t PA_PAGE_ALIGN(size_t l) {
+static inline size_t PA_PAGE_ALIGN(size_t l)
+{
     size_t page_size = pa_page_size();
     return (l + page_size - 1) & ~(page_size - 1);
 }

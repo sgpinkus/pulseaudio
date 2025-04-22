@@ -42,21 +42,25 @@
 
 #include "start-child.h"
 
-int pa_start_child_for_read(const char *name, const char *argv1, pid_t *pid) {
+int pa_start_child_for_read(const char *name, const char *argv1, pid_t *pid)
+{
 #ifdef HAVE_FORK
     pid_t child;
-    int pipe_fds[2] = { -1, -1 };
+    int pipe_fds[2] = {-1, -1};
 
-    if (pipe(pipe_fds) < 0) {
+    if (pipe(pipe_fds) < 0)
+    {
         pa_log("pipe() failed: %s", pa_cstrerror(errno));
         goto fail;
     }
 
-    if ((child = fork()) == (pid_t) -1) {
+    if ((child = fork()) == (pid_t)-1)
+    {
         pa_log("fork() failed: %s", pa_cstrerror(errno));
         goto fail;
-
-    } else if (child != 0) {
+    }
+    else if (child != 0)
+    {
 
         /* Parent */
         pa_assert_se(pa_close(pipe_fds[1]) == 0);
@@ -65,10 +69,10 @@ int pa_start_child_for_read(const char *name, const char *argv1, pid_t *pid) {
             *pid = child;
 
         return pipe_fds[0];
-    } else {
+    }
+    else
+    {
         /* child */
-
-        pa_reset_personality();
 
         pa_assert_se(pa_close(pipe_fds[0]) == 0);
         pa_assert_se(dup2(pipe_fds[1], STDOUT_FILENO) == STDOUT_FILENO);

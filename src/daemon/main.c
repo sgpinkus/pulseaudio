@@ -108,9 +108,8 @@
 /* FIXME: work around a libtool bug by making sure we have 2 elements. Bug has
  * been reported: https://debbugs.gnu.org/cgi/bugreport.cgi?bug=29576 */
 LT_DLSYM_CONST lt_dlsymlist lt_preloaded_symbols[] = {
-    { "@PROGRAM@", NULL },
-    { NULL, NULL }
-};
+    {"@PROGRAM@", NULL},
+    {NULL, NULL}};
 #endif
 
 #ifdef HAVE_LIBWRAP
@@ -126,46 +125,49 @@ int deny_severity = LOG_WARNING;
 int __padsp_disabled__ = 7;
 #endif
 
-static void signal_callback(pa_mainloop_api* m, pa_signal_event *e, int sig, void *userdata) {
+static void signal_callback(pa_mainloop_api *m, pa_signal_event *e, int sig, void *userdata)
+{
     pa_module *module = NULL;
 
     pa_log_info("Got signal %s.", pa_sig2str(sig));
 
-    switch (sig) {
+    switch (sig)
+    {
 #ifdef SIGUSR1
-        case SIGUSR1:
-            pa_module_load(&module, userdata, "module-cli", NULL);
-            break;
+    case SIGUSR1:
+        pa_module_load(&module, userdata, "module-cli", NULL);
+        break;
 #endif
 
 #ifdef SIGUSR2
-        case SIGUSR2:
-            pa_module_load(&module, userdata, "module-cli-protocol-unix", NULL);
-            break;
+    case SIGUSR2:
+        pa_module_load(&module, userdata, "module-cli-protocol-unix", NULL);
+        break;
 #endif
 
 #ifdef SIGHUP
-        case SIGHUP: {
-            char *c = pa_full_status_string(userdata);
-            pa_log_notice("%s", c);
-            pa_xfree(c);
-            return;
-        }
+    case SIGHUP:
+    {
+        char *c = pa_full_status_string(userdata);
+        pa_log_notice("%s", c);
+        pa_xfree(c);
+        return;
+    }
 #endif
 
-        case SIGINT:
-        case SIGTERM:
-        default:
-            pa_log_info("Exiting.");
-            m->quit(m, 0);
-            break;
+    case SIGINT:
+    case SIGTERM:
+    default:
+        pa_log_info("Exiting.");
+        m->quit(m, 0);
+        break;
     }
 }
 
-
 #if defined(OS_IS_WIN32)
 
-static int change_user(void) {
+static int change_user(void)
+{
     pa_log_info("Overriding system runtime/config base dir to '%s'.", pa_win32_get_system_appdata());
 
     /* On other platforms, these paths are compiled into PulseAudio. This isn't
@@ -189,24 +191,30 @@ static int change_user(void) {
         mkdir(run_path);
         PSECURITY_DESCRIPTOR sd;
         if (ConvertStringSecurityDescriptorToSecurityDescriptorA(
-            "D:PAI"                   /* DACL, disable inheritance from parent, enable propagation to children */
-            "(A;OICI;FA;;;SY)"        /* give system full access */
-            "(A;OICI;FA;;;CO)"        /* give owner full access */
-            "(A;OICI;FA;;;BA)"        /* give administrators full access */
-            "(A;OICI;0x1200a9;;;WD)", /* give everyone read/write/execute access */
-            SDDL_REVISION_1, &sd, NULL
-        )) {
+                "D:PAI"                   /* DACL, disable inheritance from parent, enable propagation to children */
+                "(A;OICI;FA;;;SY)"        /* give system full access */
+                "(A;OICI;FA;;;CO)"        /* give owner full access */
+                "(A;OICI;FA;;;BA)"        /* give administrators full access */
+                "(A;OICI;0x1200a9;;;WD)", /* give everyone read/write/execute access */
+                SDDL_REVISION_1, &sd, NULL))
+        {
             PACL acl;
             BOOL acl_present, acl_default;
-            if (GetSecurityDescriptorDacl(sd, &acl_present, &acl, &acl_default)) {
-                if (SetNamedSecurityInfo(run_path, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION, NULL, NULL, acl, NULL) != ERROR_SUCCESS) {
+            if (GetSecurityDescriptorDacl(sd, &acl_present, &acl, &acl_default))
+            {
+                if (SetNamedSecurityInfo(run_path, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION, NULL, NULL, acl, NULL) != ERROR_SUCCESS)
+                {
                     pa_log_warn("Failed to set DACL for runtime dir: failed to apply DACL: error %lu.", GetLastError());
                 }
                 LocalFree(acl);
-            } else {
+            }
+            else
+            {
                 pa_log_warn("Failed to set DACL for runtime dir: failed to get security descriptor DACL: error %lu.", GetLastError());
             }
-        } else {
+        }
+        else
+        {
             pa_log_warn("Failed to set DACL for runtime dir: failed to parse security descriptor: error %lu.", GetLastError());
         }
     }
@@ -214,23 +222,29 @@ static int change_user(void) {
         mkdir(lib_path);
         PSECURITY_DESCRIPTOR sd;
         if (ConvertStringSecurityDescriptorToSecurityDescriptorA(
-            "D:PAI"             /* DACL, disable inheritance from parent, enable propagation to children */
-            "(A;OICI;FA;;;SY)"  /* give system full access */
-            "(A;OICI;FA;;;CO)"  /* give owner full access */
-            "(A;OICI;FA;;;BA)", /* give administrators full access */
-            SDDL_REVISION_1, &sd, NULL
-        )) {
+                "D:PAI"             /* DACL, disable inheritance from parent, enable propagation to children */
+                "(A;OICI;FA;;;SY)"  /* give system full access */
+                "(A;OICI;FA;;;CO)"  /* give owner full access */
+                "(A;OICI;FA;;;BA)", /* give administrators full access */
+                SDDL_REVISION_1, &sd, NULL))
+        {
             PACL acl;
             BOOL acl_present, acl_default;
-            if (GetSecurityDescriptorDacl(sd, &acl_present, &acl, &acl_default)) {
-                if (SetNamedSecurityInfo(lib_path, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION, NULL, NULL, acl, NULL) != ERROR_SUCCESS) {
+            if (GetSecurityDescriptorDacl(sd, &acl_present, &acl, &acl_default))
+            {
+                if (SetNamedSecurityInfo(lib_path, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION, NULL, NULL, acl, NULL) != ERROR_SUCCESS)
+                {
                     pa_log_warn("Failed to set DACL for lib dir: failed to apply DACL: error %lu.", GetLastError());
                 }
                 LocalFree(acl);
-            } else {
+            }
+            else
+            {
                 pa_log_warn("Failed to set DACL for lib dir: failed to get security descriptor DACL: error %lu.", GetLastError());
             }
-        } else {
+        }
+        else
+        {
             pa_log_warn("Failed to set DACL for lib dir: failed to parse security descriptor: error %lu.", GetLastError());
         }
     }
@@ -252,30 +266,34 @@ static int change_user(void) {
 
 #elif defined(HAVE_PWD_H) && defined(HAVE_GRP_H)
 
-static int change_user(void) {
+static int change_user(void)
+{
     struct passwd *pw;
-    struct group * gr;
+    struct group *gr;
     int r;
 
     /* This function is called only in system-wide mode. It creates a
      * runtime dir in /var/run/ with proper UID/GID and drops privs
      * afterwards. */
 
-    if (!(pw = getpwnam(PA_SYSTEM_USER))) {
+    if (!(pw = getpwnam(PA_SYSTEM_USER)))
+    {
         pa_log(_("Failed to find user '%s'."), PA_SYSTEM_USER);
         return -1;
     }
 
-    if (!(gr = getgrnam(PA_SYSTEM_GROUP))) {
+    if (!(gr = getgrnam(PA_SYSTEM_GROUP)))
+    {
         pa_log(_("Failed to find group '%s'."), PA_SYSTEM_GROUP);
         return -1;
     }
 
     pa_log_info("Found user '%s' (UID %lu) and group '%s' (GID %lu).",
-                PA_SYSTEM_USER, (unsigned long) pw->pw_uid,
-                PA_SYSTEM_GROUP, (unsigned long) gr->gr_gid);
+                PA_SYSTEM_USER, (unsigned long)pw->pw_uid,
+                PA_SYSTEM_GROUP, (unsigned long)gr->gr_gid);
 
-    if (pw->pw_gid != gr->gr_gid) {
+    if (pw->pw_gid != gr->gr_gid)
+    {
         pa_log(_("GID of user '%s' and of group '%s' don't match."), PA_SYSTEM_USER, PA_SYSTEM_GROUP);
         return -1;
     }
@@ -283,19 +301,22 @@ static int change_user(void) {
     if (!pa_streq(pw->pw_dir, PA_SYSTEM_RUNTIME_PATH))
         pa_log_warn(_("Home directory of user '%s' is not '%s', ignoring."), PA_SYSTEM_USER, PA_SYSTEM_RUNTIME_PATH);
 
-    if (pa_make_secure_dir(PA_SYSTEM_RUNTIME_PATH, 0755, pw->pw_uid, gr->gr_gid, true) < 0) {
+    if (pa_make_secure_dir(PA_SYSTEM_RUNTIME_PATH, 0755, pw->pw_uid, gr->gr_gid, true) < 0)
+    {
         pa_log(_("Failed to create '%s': %s"), PA_SYSTEM_RUNTIME_PATH, pa_cstrerror(errno));
         return -1;
     }
 
-    if (pa_make_secure_dir(PA_SYSTEM_STATE_PATH, 0700, pw->pw_uid, gr->gr_gid, true) < 0) {
+    if (pa_make_secure_dir(PA_SYSTEM_STATE_PATH, 0700, pw->pw_uid, gr->gr_gid, true) < 0)
+    {
         pa_log(_("Failed to create '%s': %s"), PA_SYSTEM_STATE_PATH, pa_cstrerror(errno));
         return -1;
     }
 
     /* We don't create the config dir here, because we don't need to write to it */
 
-    if (initgroups(PA_SYSTEM_USER, gr->gr_gid) != 0) {
+    if (initgroups(PA_SYSTEM_USER, gr->gr_gid) != 0)
+    {
         pa_log(_("Failed to change group list: %s"), pa_cstrerror(errno));
         return -1;
     }
@@ -311,7 +332,8 @@ static int change_user(void) {
 #error "No API to drop privileges"
 #endif
 
-    if (r < 0) {
+    if (r < 0)
+    {
         pa_log(_("Failed to change GID: %s"), pa_cstrerror(errno));
         return -1;
     }
@@ -327,7 +349,8 @@ static int change_user(void) {
 #error "No API to drop privileges"
 #endif
 
-    if (r < 0) {
+    if (r < 0)
+    {
         pa_log(_("Failed to change UID: %s"), pa_cstrerror(errno));
         return -1;
     }
@@ -356,7 +379,8 @@ static int change_user(void) {
 
 #else /* HAVE_PWD_H && HAVE_GRP_H */
 
-static int change_user(void) {
+static int change_user(void)
+{
     pa_log(_("System wide mode unsupported on this platform."));
     return -1;
 }
@@ -365,7 +389,8 @@ static int change_user(void) {
 
 #ifdef HAVE_SYS_RESOURCE_H
 
-static int set_one_rlimit(const pa_rlimit *r, int resource, const char *name) {
+static int set_one_rlimit(const pa_rlimit *r, int resource, const char *name)
+{
     struct rlimit rl;
     pa_assert(r);
 
@@ -374,15 +399,17 @@ static int set_one_rlimit(const pa_rlimit *r, int resource, const char *name) {
 
     rl.rlim_cur = rl.rlim_max = r->value;
 
-    if (setrlimit(resource, &rl) < 0) {
-        pa_log_info("setrlimit(%s, (%u, %u)) failed: %s", name, (unsigned) r->value, (unsigned) r->value, pa_cstrerror(errno));
+    if (setrlimit(resource, &rl) < 0)
+    {
+        pa_log_info("setrlimit(%s, (%u, %u)) failed: %s", name, (unsigned)r->value, (unsigned)r->value, pa_cstrerror(errno));
         return -1;
     }
 
     return 0;
 }
 
-static void set_all_rlimits(const pa_daemon_conf *conf) {
+static void set_all_rlimits(const pa_daemon_conf *conf)
+{
     set_one_rlimit(&conf->rlimit_fsize, RLIMIT_FSIZE, "RLIMIT_FSIZE");
     set_one_rlimit(&conf->rlimit_data, RLIMIT_DATA, "RLIMIT_DATA");
     set_one_rlimit(&conf->rlimit_stack, RLIMIT_STACK, "RLIMIT_STACK");
@@ -423,7 +450,8 @@ static void set_all_rlimits(const pa_daemon_conf *conf) {
 }
 #endif
 
-static char *check_configured_address(void) {
+static char *check_configured_address(void)
+{
     char *default_server = NULL;
     pa_client_conf *c = pa_client_conf_new();
 
@@ -438,18 +466,21 @@ static char *check_configured_address(void) {
 }
 
 #ifdef HAVE_DBUS
-static pa_dbus_connection *register_dbus_name(pa_core *c, DBusBusType bus, const char* name) {
+static pa_dbus_connection *register_dbus_name(pa_core *c, DBusBusType bus, const char *name)
+{
     DBusError error;
     pa_dbus_connection *conn;
 
     dbus_error_init(&error);
 
-    if (!(conn = pa_dbus_bus_get(c, bus, &error)) || dbus_error_is_set(&error)) {
+    if (!(conn = pa_dbus_bus_get(c, bus, &error)) || dbus_error_is_set(&error))
+    {
         pa_log_warn("Unable to contact D-Bus: %s: %s", error.name, error.message);
         goto fail;
     }
 
-    if (dbus_bus_request_name(pa_dbus_connection_get(conn), name, DBUS_NAME_FLAG_DO_NOT_QUEUE, &error) == DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
+    if (dbus_bus_request_name(pa_dbus_connection_get(conn), name, DBUS_NAME_FLAG_DO_NOT_QUEUE, &error) == DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
+    {
         pa_log_debug("Got %s!", name);
         return conn;
     }
@@ -479,12 +510,15 @@ static char **argv;
 static int real_main(int s_argc, char *s_argv[]);
 static SERVICE_STATUS_HANDLE svc_status;
 
-DWORD svc_callback(DWORD ctl, DWORD evt, LPVOID data, LPVOID userdata) {
+DWORD svc_callback(DWORD ctl, DWORD evt, LPVOID data, LPVOID userdata)
+{
     pa_mainloop **m = userdata;
-    switch (ctl) {
+    switch (ctl)
+    {
     case SERVICE_CONTROL_STOP:
     case SERVICE_CONTROL_SHUTDOWN:
-        if (m) {
+        if (m)
+        {
             pa_log_info("Exiting.");
             pa_mainloop_get_api(*m)->quit(pa_mainloop_get_api(*m), 0);
         }
@@ -495,20 +529,24 @@ DWORD svc_callback(DWORD ctl, DWORD evt, LPVOID data, LPVOID userdata) {
     return ERROR_CALL_NOT_IMPLEMENTED;
 }
 
-int main(int p_argc, char *p_argv[]) {
+int main(int p_argc, char *p_argv[])
+{
     argc = p_argc;
     argv = p_argv;
     if (StartServiceCtrlDispatcherA((SERVICE_TABLE_ENTRYA[]){
-        {SVC_NAME, (LPSERVICE_MAIN_FUNCTIONA) real_main},
-        {0},
-    })) return 0;
+            {SVC_NAME, (LPSERVICE_MAIN_FUNCTIONA)real_main},
+            {0},
+        }))
+        return 0;
     is_svc = false;
     return real_main(0, NULL);
 }
 
-static int real_main(int s_argc, char *s_argv[]) {
+static int real_main(int s_argc, char *s_argv[])
+{
 #else
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 #endif
     pa_core *c = NULL;
     pa_strbuf *buf = NULL;
@@ -522,38 +560,40 @@ int main(int argc, char *argv[]) {
     int n_fds = 0, *passed_fds = NULL;
     const char *e;
 #ifdef HAVE_FORK
-    int daemon_pipe[2] = { -1, -1 };
-    int daemon_pipe2[2] = { -1, -1 };
+    int daemon_pipe[2] = {-1, -1};
+    int daemon_pipe2[2] = {-1, -1};
 #endif
     int autospawn_fd = -1;
     bool autospawn_locked = false;
 #ifdef HAVE_DBUS
     pa_dbusobj_server_lookup *server_lookup = NULL; /* /org/pulseaudio/server_lookup */
-    pa_dbus_connection *lookup_service_bus = NULL; /* Always the user bus. */
-    pa_dbus_connection *server_bus = NULL; /* The bus where we reserve org.pulseaudio.Server, either the user or the system bus. */
+    pa_dbus_connection *lookup_service_bus = NULL;  /* Always the user bus. */
+    pa_dbus_connection *server_bus = NULL;          /* The bus where we reserve org.pulseaudio.Server, either the user or the system bus. */
     bool start_server;
 #endif
 
 #ifdef OS_IS_WIN32
-    if (is_svc && !(svc_status = RegisterServiceCtrlHandlerExA(SVC_NAME, (LPHANDLER_FUNCTION_EX) svc_callback, &mainloop))) {
+    if (is_svc && !(svc_status = RegisterServiceCtrlHandlerExA(SVC_NAME, (LPHANDLER_FUNCTION_EX)svc_callback, &mainloop)))
+    {
         pa_log("Failed to register service control handler.");
         goto finish;
     }
 
-    if (is_svc) {
+    if (is_svc)
+    {
         SetServiceStatus(svc_status, &(SERVICE_STATUS){
-            .dwServiceType      = SERVICE_WIN32,
-            .dwCurrentState     = SERVICE_START_PENDING,
-            .dwControlsAccepted = 0,
-            .dwWin32ExitCode    = NO_ERROR,
-            .dwWaitHint         = 3000,
-        });
+                                         .dwServiceType = SERVICE_WIN32,
+                                         .dwCurrentState = SERVICE_START_PENDING,
+                                         .dwControlsAccepted = 0,
+                                         .dwWin32ExitCode = NO_ERROR,
+                                         .dwWaitHint = 3000,
+                                     });
     }
 #endif
 
     pa_log_set_ident("pulseaudio");
     pa_log_set_level(PA_LOG_NOTICE);
-    pa_log_set_flags(PA_LOG_COLORS|PA_LOG_PRINT_FILE|PA_LOG_PRINT_LEVEL, PA_LOG_RESET);
+    pa_log_set_flags(PA_LOG_COLORS | PA_LOG_PRINT_FILE | PA_LOG_PRINT_LEVEL, PA_LOG_RESET);
 
 #if !defined(HAVE_BIND_NOW) && defined(__linux__) && defined(__OPTIMIZE__)
     /*
@@ -563,7 +603,8 @@ int main(int argc, char *argv[]) {
        admittedly a bit snake-oilish.
     */
 
-    if (!getenv("LD_BIND_NOW")) {
+    if (!getenv("LD_BIND_NOW"))
+    {
         char *rp;
         char *canonical_rp;
 
@@ -572,9 +613,11 @@ int main(int argc, char *argv[]) {
 
         pa_set_env("LD_BIND_NOW", "1");
 
-        if ((canonical_rp = pa_realpath(PA_BINARY))) {
+        if ((canonical_rp = pa_realpath(PA_BINARY)))
+        {
 
-            if ((rp = pa_readlink("/proc/self/exe"))) {
+            if ((rp = pa_readlink("/proc/self/exe")))
+            {
 
                 if (pa_streq(rp, canonical_rp))
                     pa_assert_se(execv(rp, argv) == 0);
@@ -582,36 +625,39 @@ int main(int argc, char *argv[]) {
                     pa_log_warn("/proc/self/exe does not point to %s, cannot self execute. Are you playing games?", canonical_rp);
 
                 pa_xfree(rp);
-
-            } else
+            }
+            else
                 pa_log_warn("Couldn't read /proc/self/exe, cannot self execute. Running in a chroot()?");
 
             pa_xfree(canonical_rp);
-
-        } else
+        }
+        else
             pa_log_warn("Couldn't canonicalize binary path, cannot self execute.");
     }
 #endif
 
 #ifdef HAVE_SYSTEMD_DAEMON
     n_fds = sd_listen_fds(0);
-    if (n_fds > 0) {
+    if (n_fds > 0)
+    {
         int i = n_fds;
 
-        passed_fds = pa_xnew(int, n_fds+2);
-        passed_fds[n_fds] = passed_fds[n_fds+1] = -1;
+        passed_fds = pa_xnew(int, n_fds + 2);
+        passed_fds[n_fds] = passed_fds[n_fds + 1] = -1;
         while (i--)
             passed_fds[i] = SD_LISTEN_FDS_START + i;
     }
 #endif
 
-    if (!passed_fds) {
+    if (!passed_fds)
+    {
         n_fds = 0;
         passed_fds = pa_xnew(int, 2);
         passed_fds[0] = passed_fds[1] = -1;
     }
 
-    if ((e = getenv("PULSE_PASSED_FD"))) {
+    if ((e = getenv("PULSE_PASSED_FD")))
+    {
         int passed_fd = atoi(e);
         if (passed_fd > 2)
             passed_fds[n_fds] = passed_fd;
@@ -621,7 +667,6 @@ int main(int argc, char *argv[]) {
      * context we have been started. Let's cleanup our execution
      * context as good as possible */
 
-    pa_reset_personality();
     pa_drop_root();
     pa_close_allv(passed_fds);
     pa_xfree(passed_fds);
@@ -646,15 +691,17 @@ int main(int argc, char *argv[]) {
     if (pa_daemon_conf_env(conf) < 0)
         goto finish;
 
-    if (pa_cmdline_parse(conf, argc, argv, &d) < 0) {
+    if (pa_cmdline_parse(conf, argc, argv, &d) < 0)
+    {
         pa_log(_("Failed to parse command line."));
         goto finish;
     }
 
     if (conf->log_target)
         pa_log_set_target(conf->log_target);
-    else {
-        pa_log_target target = { .type = PA_LOG_STDERR, .file = NULL };
+    else
+    {
+        pa_log_target target = {.type = PA_LOG_STDERR, .file = NULL};
         pa_log_set_target(&target);
     }
 
@@ -668,24 +715,26 @@ int main(int argc, char *argv[]) {
 #ifdef HAVE_DBUS
     /* conf->system_instance and conf->local_server_type control almost the
      * same thing; make them agree about what is requested. */
-    switch (conf->local_server_type) {
-        case PA_SERVER_TYPE_UNSET:
-            conf->local_server_type = conf->system_instance ? PA_SERVER_TYPE_SYSTEM : PA_SERVER_TYPE_USER;
-            break;
-        case PA_SERVER_TYPE_USER:
-        case PA_SERVER_TYPE_NONE:
-            conf->system_instance = false;
-            break;
-        case PA_SERVER_TYPE_SYSTEM:
-            conf->system_instance = true;
-            break;
-        default:
-            pa_assert_not_reached();
+    switch (conf->local_server_type)
+    {
+    case PA_SERVER_TYPE_UNSET:
+        conf->local_server_type = conf->system_instance ? PA_SERVER_TYPE_SYSTEM : PA_SERVER_TYPE_USER;
+        break;
+    case PA_SERVER_TYPE_USER:
+    case PA_SERVER_TYPE_NONE:
+        conf->system_instance = false;
+        break;
+    case PA_SERVER_TYPE_SYSTEM:
+        conf->system_instance = true;
+        break;
+    default:
+        pa_assert_not_reached();
     }
 
     start_server = conf->local_server_type == PA_SERVER_TYPE_USER || (getuid() == 0 && conf->local_server_type == PA_SERVER_TYPE_SYSTEM);
 
-    if (!start_server && conf->local_server_type == PA_SERVER_TYPE_SYSTEM) {
+    if (!start_server && conf->local_server_type == PA_SERVER_TYPE_SYSTEM)
+    {
         pa_log_notice(_("System mode refused for non-root user. Only starting the D-Bus server lookup service."));
         conf->system_instance = false;
     }
@@ -707,107 +756,118 @@ int main(int argc, char *argv[]) {
 
     pa_random_seed();
 
-    switch (conf->cmd) {
-        case PA_CMD_DUMP_MODULES:
-            pa_dump_modules(conf, argc-d, argv+d);
-            retval = 0;
-            goto finish;
+    switch (conf->cmd)
+    {
+    case PA_CMD_DUMP_MODULES:
+        pa_dump_modules(conf, argc - d, argv + d);
+        retval = 0;
+        goto finish;
 
-        case PA_CMD_DUMP_CONF: {
+    case PA_CMD_DUMP_CONF:
+    {
 
-            if (d < argc) {
-                pa_log("Too many arguments.");
-                goto finish;
-            }
-
-            s = pa_daemon_conf_dump(conf);
-            fputs(s, stdout);
-            pa_xfree(s);
-            retval = 0;
+        if (d < argc)
+        {
+            pa_log("Too many arguments.");
             goto finish;
         }
 
-        case PA_CMD_DUMP_RESAMPLE_METHODS: {
-            int i;
-
-            if (d < argc) {
-                pa_log("Too many arguments.");
-                goto finish;
-            }
-
-            for (i = 0; i < PA_RESAMPLER_MAX; i++)
-                if (pa_resample_method_supported(i))
-                    printf("%s\n", pa_resample_method_to_string(i));
-
-            retval = 0;
-            goto finish;
-        }
-
-        case PA_CMD_HELP :
-            pa_cmdline_help(argv[0]);
-            retval = 0;
-            goto finish;
-
-        case PA_CMD_VERSION :
-
-            if (d < argc) {
-                pa_log("Too many arguments.");
-                goto finish;
-            }
-
-            printf(PACKAGE_NAME" "PACKAGE_VERSION"\n");
-            retval = 0;
-            goto finish;
-
-        case PA_CMD_CHECK: {
-            pid_t pid;
-
-            if (d < argc) {
-                pa_log("Too many arguments.");
-                goto finish;
-            }
-
-            if (pa_pid_file_check_running(&pid, "pulseaudio") < 0)
-                pa_log_info("Daemon not running");
-            else {
-                pa_log_info("Daemon running as PID %u", pid);
-                retval = 0;
-            }
-
-            goto finish;
-
-        }
-        case PA_CMD_KILL:
-
-            if (d < argc) {
-                pa_log("Too many arguments.");
-                goto finish;
-            }
-
-            if (pa_pid_file_kill(SIGINT, NULL, "pulseaudio") < 0)
-                pa_log(_("Failed to kill daemon: %s"), pa_cstrerror(errno));
-            else
-                retval = 0;
-
-            goto finish;
-
-        case PA_CMD_CLEANUP_SHM:
-
-            if (d < argc) {
-                pa_log("Too many arguments.");
-                goto finish;
-            }
-
-            if (pa_shm_cleanup() >= 0)
-                retval = 0;
-
-            goto finish;
-
-        default:
-            pa_assert(conf->cmd == PA_CMD_DAEMON || conf->cmd == PA_CMD_START);
+        s = pa_daemon_conf_dump(conf);
+        fputs(s, stdout);
+        pa_xfree(s);
+        retval = 0;
+        goto finish;
     }
 
-    if (d < argc) {
+    case PA_CMD_DUMP_RESAMPLE_METHODS:
+    {
+        int i;
+
+        if (d < argc)
+        {
+            pa_log("Too many arguments.");
+            goto finish;
+        }
+
+        for (i = 0; i < PA_RESAMPLER_MAX; i++)
+            if (pa_resample_method_supported(i))
+                printf("%s\n", pa_resample_method_to_string(i));
+
+        retval = 0;
+        goto finish;
+    }
+
+    case PA_CMD_HELP:
+        pa_cmdline_help(argv[0]);
+        retval = 0;
+        goto finish;
+
+    case PA_CMD_VERSION:
+
+        if (d < argc)
+        {
+            pa_log("Too many arguments.");
+            goto finish;
+        }
+
+        printf(PACKAGE_NAME " " PACKAGE_VERSION "\n");
+        retval = 0;
+        goto finish;
+
+    case PA_CMD_CHECK:
+    {
+        pid_t pid;
+
+        if (d < argc)
+        {
+            pa_log("Too many arguments.");
+            goto finish;
+        }
+
+        if (pa_pid_file_check_running(&pid, "pulseaudio") < 0)
+            pa_log_info("Daemon not running");
+        else
+        {
+            pa_log_info("Daemon running as PID %u", pid);
+            retval = 0;
+        }
+
+        goto finish;
+    }
+    case PA_CMD_KILL:
+
+        if (d < argc)
+        {
+            pa_log("Too many arguments.");
+            goto finish;
+        }
+
+        if (pa_pid_file_kill(SIGINT, NULL, "pulseaudio") < 0)
+            pa_log(_("Failed to kill daemon: %s"), pa_cstrerror(errno));
+        else
+            retval = 0;
+
+        goto finish;
+
+    case PA_CMD_CLEANUP_SHM:
+
+        if (d < argc)
+        {
+            pa_log("Too many arguments.");
+            goto finish;
+        }
+
+        if (pa_shm_cleanup() >= 0)
+            retval = 0;
+
+        goto finish;
+
+    default:
+        pa_assert(conf->cmd == PA_CMD_DAEMON || conf->cmd == PA_CMD_START);
+    }
+
+    if (d < argc)
+    {
         pa_log("Too many arguments.");
         goto finish;
     }
@@ -816,19 +876,22 @@ int main(int argc, char *argv[]) {
     if (getuid() == 0 && !conf->system_instance)
         pa_log_warn(_("This program is not intended to be run as root (unless --system is specified)."));
 #ifndef HAVE_DBUS /* A similar, only a notice worthy check was done earlier, if D-Bus is enabled. */
-    else if (getuid() != 0 && conf->system_instance) {
+    else if (getuid() != 0 && conf->system_instance)
+    {
         pa_log(_("Root privileges required."));
         goto finish;
     }
 #endif
-#endif  /* HAVE_GETUID */
+#endif /* HAVE_GETUID */
 
-    if (conf->cmd == PA_CMD_START && conf->system_instance) {
+    if (conf->cmd == PA_CMD_START && conf->system_instance)
+    {
         pa_log(_("--start not supported for system instances."));
         goto finish;
     }
 
-    if (conf->cmd == PA_CMD_START && (configured_address = check_configured_address())) {
+    if (conf->cmd == PA_CMD_START && (configured_address = check_configured_address()))
+    {
         /* There is an server address in our config, but where did it come from?
          * By default a standard X11 login will load module-x11-publish which will
          * inject PULSE_SERVER X11 property. If the PA daemon crashes, we will end
@@ -839,17 +902,20 @@ int main(int argc, char *argv[]) {
         char *ufn;
         bool start_anyway = false;
 
-        if ((ufn = pa_runtime_path(PA_NATIVE_DEFAULT_UNIX_SOCKET))) {
+        if ((ufn = pa_runtime_path(PA_NATIVE_DEFAULT_UNIX_SOCKET)))
+        {
             char *id;
 
-            if ((id = pa_machine_id())) {
+            if ((id = pa_machine_id()))
+            {
                 pa_strlist *server_list;
                 char formatted_ufn[256];
 
                 pa_snprintf(formatted_ufn, sizeof(formatted_ufn), "{%s}unix:%s", id, ufn);
                 pa_xfree(id);
 
-                if ((server_list = pa_strlist_parse(configured_address))) {
+                if ((server_list = pa_strlist_parse(configured_address)))
+                {
                     char *u = NULL;
 
                     /* We only need to check the first server */
@@ -863,7 +929,8 @@ int main(int argc, char *argv[]) {
             pa_xfree(ufn);
         }
 
-        if (!start_anyway) {
+        if (!start_anyway)
+        {
             pa_log_notice(_("User-configured server at %s, refusing to start/autospawn."), configured_address);
             pa_xfree(configured_address);
             retval = 0;
@@ -880,17 +947,20 @@ int main(int argc, char *argv[]) {
     if (conf->system_instance && !conf->disallow_module_loading)
         pa_log_warn(_("Running in system mode, but --disallow-module-loading not set."));
 
-    if (conf->system_instance && !conf->disable_shm) {
+    if (conf->system_instance && !conf->disable_shm)
+    {
         pa_log_notice(_("Running in system mode, forcibly disabling SHM mode."));
         conf->disable_shm = true;
     }
 
-    if (conf->system_instance && conf->exit_idle_time >= 0) {
+    if (conf->system_instance && conf->exit_idle_time >= 0)
+    {
         pa_log_notice(_("Running in system mode, forcibly disabling exit idle time."));
         conf->exit_idle_time = -1;
     }
 
-    if (conf->cmd == PA_CMD_START) {
+    if (conf->cmd == PA_CMD_START)
+    {
         /* If we shall start PA only when it is not running yet, we
          * first take the autospawn lock to make things
          * synchronous. */
@@ -899,12 +969,14 @@ int main(int argc, char *argv[]) {
          * on kFreeBSD (Debian bug #705435), or in upstream FreeBSD ports
          * (bug reference: ports/128947, patched in SVN r231972). */
 #if !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__)
-        if ((autospawn_fd = pa_autospawn_lock_init()) < 0) {
+        if ((autospawn_fd = pa_autospawn_lock_init()) < 0)
+        {
             pa_log("Failed to initialize autospawn lock");
             goto finish;
         }
 
-        if ((pa_autospawn_lock_acquire(true) < 0)) {
+        if ((pa_autospawn_lock_acquire(true) < 0))
+        {
             pa_log("Failed to acquire autospawn lock");
             goto finish;
         }
@@ -913,36 +985,42 @@ int main(int argc, char *argv[]) {
 #endif
     }
 
-    if (conf->daemonize) {
+    if (conf->daemonize)
+    {
 #ifdef HAVE_FORK
         pid_t child;
 #endif
 
-        if (pa_stdio_acquire() < 0) {
+        if (pa_stdio_acquire() < 0)
+        {
             pa_log(_("Failed to acquire stdio."));
             goto finish;
         }
 
 #ifdef HAVE_FORK
-        if (pipe(daemon_pipe) < 0) {
+        if (pipe(daemon_pipe) < 0)
+        {
             pa_log(_("pipe() failed: %s"), pa_cstrerror(errno));
             goto finish;
         }
 
-        if ((child = fork()) < 0) {
+        if ((child = fork()) < 0)
+        {
             pa_log(_("fork() failed: %s"), pa_cstrerror(errno));
             pa_close_pipe(daemon_pipe);
             goto finish;
         }
 
-        if (child != 0) {
+        if (child != 0)
+        {
             ssize_t n;
             /* Father */
 
             pa_assert_se(pa_close(daemon_pipe[1]) == 0);
             daemon_pipe[1] = -1;
 
-            if ((n = pa_loop_read(daemon_pipe[0], &retval, sizeof(retval), NULL)) != sizeof(retval)) {
+            if ((n = pa_loop_read(daemon_pipe[0], &retval, sizeof(retval), NULL)) != sizeof(retval))
+            {
 
                 if (n < 0)
                     pa_log(_("read() failed: %s"), pa_cstrerror(errno));
@@ -958,7 +1036,8 @@ int main(int argc, char *argv[]) {
             goto finish;
         }
 
-        if (autospawn_fd >= 0) {
+        if (autospawn_fd >= 0)
+        {
             /* The lock file is unlocked from the parent, so we need
              * to close it in the child */
 
@@ -973,17 +1052,19 @@ int main(int argc, char *argv[]) {
         daemon_pipe[0] = -1;
 #endif
 
-        if (!conf->log_target) {
+        if (!conf->log_target)
+        {
 #ifdef HAVE_SYSTEMD_JOURNAL
-            pa_log_target target = { .type = PA_LOG_JOURNAL, .file = NULL };
+            pa_log_target target = {.type = PA_LOG_JOURNAL, .file = NULL};
 #else
-            pa_log_target target = { .type = PA_LOG_SYSLOG, .file = NULL };
+            pa_log_target target = {.type = PA_LOG_SYSLOG, .file = NULL};
 #endif
             pa_log_set_target(&target);
         }
 
 #ifdef HAVE_SETSID
-        if (setsid() < 0) {
+        if (setsid() < 0)
+        {
             pa_log(_("setsid() failed: %s"), pa_cstrerror(errno));
             goto finish;
         }
@@ -995,25 +1076,29 @@ int main(int argc, char *argv[]) {
          * process that can never acquire a TTY again, in a session and
          * process group without leader */
 
-        if (pipe(daemon_pipe2) < 0) {
+        if (pipe(daemon_pipe2) < 0)
+        {
             pa_log(_("pipe() failed: %s"), pa_cstrerror(errno));
             goto finish;
         }
 
-        if ((child = fork()) < 0) {
+        if ((child = fork()) < 0)
+        {
             pa_log(_("fork() failed: %s"), pa_cstrerror(errno));
             pa_close_pipe(daemon_pipe2);
             goto finish;
         }
 
-        if (child != 0) {
+        if (child != 0)
+        {
             ssize_t n;
             /* Father */
 
             pa_assert_se(pa_close(daemon_pipe2[1]) == 0);
             daemon_pipe2[1] = -1;
 
-            if ((n = pa_loop_read(daemon_pipe2[0], &retval, sizeof(retval), NULL)) != sizeof(retval)) {
+            if ((n = pa_loop_read(daemon_pipe2[0], &retval, sizeof(retval), NULL)) != sizeof(retval))
+            {
 
                 if (n < 0)
                     pa_log(_("read() failed: %s"), pa_cstrerror(errno));
@@ -1112,17 +1197,19 @@ int main(int argc, char *argv[]) {
 #elif defined(FASTPATH)
     pa_log_debug("FASTPATH defined, only fast path asserts disabled.");
 #else
-    pa_log_debug("All asserts enabled.");
+pa_log_debug("All asserts enabled.");
 #endif
 
-    if (!(s = pa_machine_id())) {
+    if (!(s = pa_machine_id()))
+    {
         pa_log(_("Failed to get machine ID"));
         goto finish;
     }
     pa_log_info("Machine ID is %s.", s);
     pa_xfree(s);
 
-    if ((s = pa_session_id())) {
+    if ((s = pa_session_id()))
+    {
         pa_log_info("Session ID is %s.", s);
         pa_xfree(s);
     }
@@ -1145,12 +1232,15 @@ int main(int argc, char *argv[]) {
         pa_log_warn(_("OK, so you are running PA in system mode. Please make sure that you actually do want to do that.\n"
                       "Please read http://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/WhatIsWrongWithSystemWide/ for an explanation why system mode is usually a bad idea."));
 
-    if (conf->use_pid_file) {
+    if (conf->use_pid_file)
+    {
         int z;
 
-        if ((z = pa_pid_file_create("pulseaudio")) != 0) {
+        if ((z = pa_pid_file_create("pulseaudio")) != 0)
+        {
 
-            if (conf->cmd == PA_CMD_START && z > 0) {
+            if (conf->cmd == PA_CMD_START && z > 0)
+            {
                 /* If we are already running and with are run in
                  * --start mode, then let's return this as success. */
 
@@ -1172,7 +1262,8 @@ int main(int argc, char *argv[]) {
     else
         pa_log_info("System appears to not support high resolution timers");
 
-    if (conf->lock_memory) {
+    if (conf->lock_memory)
+    {
 #if defined(HAVE_SYS_MMAN_H) && !defined(__ANDROID__)
         if (mlockall(MCL_FUTURE) < 0)
             pa_log_warn("mlockall() failed: %s", pa_cstrerror(errno));
@@ -1189,7 +1280,8 @@ int main(int argc, char *argv[]) {
 
     if (!(c = pa_core_new(pa_mainloop_get_api(mainloop), !conf->disable_shm,
                           !conf->disable_shm && !conf->disable_memfd && pa_memfd_is_locally_supported(),
-                          conf->shm_size))) {
+                          conf->shm_size)))
+    {
         pa_log(_("pa_core_new() failed."));
         goto finish;
     }
@@ -1253,17 +1345,20 @@ int main(int argc, char *argv[]) {
     {
         const char *command_source = NULL;
 
-        if (conf->load_default_script_file) {
+        if (conf->load_default_script_file)
+        {
             FILE *f;
 
-            if ((f = pa_daemon_conf_open_default_script_file(conf))) {
+            if ((f = pa_daemon_conf_open_default_script_file(conf)))
+            {
                 r = pa_cli_command_execute_file_stream(c, f, buf, &conf->fail);
                 fclose(f);
                 command_source = pa_daemon_conf_get_default_script_file(conf);
             }
         }
 
-        if (r >= 0) {
+        if (r >= 0)
+        {
             r = pa_cli_command_execute(c, conf->script_commands, buf, &conf->fail);
             command_source = _("command line arguments");
         }
@@ -1271,17 +1366,21 @@ int main(int argc, char *argv[]) {
         pa_log_error("%s", s = pa_strbuf_to_string_free(buf));
         pa_xfree(s);
 
-        if (r < 0 && conf->fail) {
+        if (r < 0 && conf->fail)
+        {
             pa_log(_("Failed to initialize daemon due to errors while executing startup commands. Source of commands: %s"), command_source);
             goto finish;
         }
 
-        if (!c->modules || pa_idxset_size(c->modules) == 0) {
+        if (!c->modules || pa_idxset_size(c->modules) == 0)
+        {
             pa_log(_("Daemon startup without any loaded modules, refusing to work."));
             goto finish;
         }
 #ifdef HAVE_DBUS
-    } else {
+    }
+    else
+    {
         /* When we just provide the D-Bus server lookup service, we don't want
          * any modules to be loaded. We haven't loaded any so far, so one might
          * think there's no way to contact the server, but receiving certain
@@ -1295,8 +1394,10 @@ int main(int argc, char *argv[]) {
     c->disallow_module_loading = conf->disallow_module_loading;
 
 #ifdef HAVE_DBUS
-    if (!conf->system_instance) {
-        if ((server_lookup = pa_dbusobj_server_lookup_new(c))) {
+    if (!conf->system_instance)
+    {
+        if ((server_lookup = pa_dbusobj_server_lookup_new(c)))
+        {
             if (!(lookup_service_bus = register_dbus_name(c, DBUS_BUS_SESSION, "org.PulseAudio1")))
                 goto finish;
         }
@@ -1307,7 +1408,8 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef HAVE_FORK
-    if (daemon_pipe2[1] >= 0) {
+    if (daemon_pipe2[1] >= 0)
+    {
         int ok = 0;
         pa_loop_write(daemon_pipe2[1], &ok, sizeof(ok), NULL);
         pa_close(daemon_pipe2[1]);
@@ -1322,14 +1424,15 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef OS_IS_WIN32
-    if (is_svc) {
+    if (is_svc)
+    {
         SetServiceStatus(svc_status, &(SERVICE_STATUS){
-            .dwServiceType      = SERVICE_WIN32,
-            .dwCurrentState     = SERVICE_RUNNING,
-            .dwControlsAccepted = SERVICE_ACCEPT_STOP|SERVICE_ACCEPT_SHUTDOWN,
-            .dwWin32ExitCode    = NO_ERROR,
-            .dwWaitHint         = 0,
-        });
+                                         .dwServiceType = SERVICE_WIN32,
+                                         .dwCurrentState = SERVICE_RUNNING,
+                                         .dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN,
+                                         .dwWin32ExitCode = NO_ERROR,
+                                         .dwWaitHint = 0,
+                                     });
     }
 #endif
 
@@ -1344,14 +1447,15 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef OS_IS_WIN32
-    if (is_svc) {
+    if (is_svc)
+    {
         SetServiceStatus(svc_status, &(SERVICE_STATUS){
-            .dwServiceType      = SERVICE_WIN32,
-            .dwCurrentState     = SERVICE_STOP_PENDING,
-            .dwControlsAccepted = 0,
-            .dwWin32ExitCode    = NO_ERROR,
-            .dwWaitHint         = 2000,
-        });
+                                         .dwServiceType = SERVICE_WIN32,
+                                         .dwCurrentState = SERVICE_STOP_PENDING,
+                                         .dwControlsAccepted = 0,
+                                         .dwWin32ExitCode = NO_ERROR,
+                                         .dwWaitHint = 2000,
+                                     });
     }
 #endif
 
@@ -1365,14 +1469,16 @@ finish:
         pa_dbusobj_server_lookup_free(server_lookup);
 #endif
 
-    if (autospawn_fd >= 0) {
+    if (autospawn_fd >= 0)
+    {
         if (autospawn_locked)
             pa_autospawn_lock_release();
 
         pa_autospawn_lock_done(false);
     }
 
-    if (c) {
+    if (c)
+    {
         /* Ensure all the modules/samples are unloaded when the core is still ref'ed,
          * as unlink callback hooks in modules may need the core to be ref'ed */
         pa_module_unload_all(c);
@@ -1423,14 +1529,15 @@ finish:
 #endif
 
 #ifdef OS_IS_WIN32
-    if (is_svc) {
+    if (is_svc)
+    {
         SetServiceStatus(svc_status, &(SERVICE_STATUS){
-            .dwServiceType      = SERVICE_WIN32,
-            .dwCurrentState     = SERVICE_STOPPED,
-            .dwControlsAccepted = 0,
-            .dwWin32ExitCode    = retval ? ERROR_PROCESS_ABORTED : NO_ERROR,
-            .dwWaitHint         = 0,
-        });
+                                         .dwServiceType = SERVICE_WIN32,
+                                         .dwCurrentState = SERVICE_STOPPED,
+                                         .dwControlsAccepted = 0,
+                                         .dwWin32ExitCode = retval ? ERROR_PROCESS_ABORTED : NO_ERROR,
+                                         .dwWaitHint = 0,
+                                     });
     }
 #endif
 
